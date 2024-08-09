@@ -2,15 +2,13 @@ import pygame
 import random
 import time
 
-# Initialisation de pygame
 pygame.init()
 
-# Dimensions de la fenêtre
 WIDTH, HEIGHT = 800, 600
 WIN = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Pong But Funny™")
 
-# Couleurs
+# Couleurs car pygames c'est bizzare w الله
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
 YELLOW = (255, 255, 0)
@@ -19,18 +17,18 @@ RED = (255, 0, 0)
 BLUE = (0, 0, 255)
 PURPLE = (128, 0, 128)
 
-# Vitesse de jeu
+# Speed/FPS
 FPS = 60
 PADDLE_WIDTH, PADDLE_HEIGHT = 20, 100
 BALL_RADIUS = 7
 BLOCK_WIDTH, BLOCK_HEIGHT = 60, 20
 
-# Vitesses initiales des paddles et de la balle
+# Paddle and ball speed
 PADDLE_VEL = 5
 BALL_X_VEL = 4 * random.choice((1, -1))
 BALL_Y_VEL = 4 * random.choice((1, -1))
 
-# Positions initiales des paddles et de la balle
+# Positions
 left_paddle = pygame.Rect(10, HEIGHT//2 - PADDLE_HEIGHT//2, PADDLE_WIDTH, PADDLE_HEIGHT)
 right_paddle = pygame.Rect(WIDTH - 10 - PADDLE_WIDTH, HEIGHT//2 - PADDLE_HEIGHT//2, PADDLE_WIDTH, PADDLE_HEIGHT)
 ball = pygame.Rect(WIDTH//2 - BALL_RADIUS, HEIGHT//2 - BALL_RADIUS, BALL_RADIUS*2, BALL_RADIUS*2)
@@ -39,11 +37,11 @@ ball = pygame.Rect(WIDTH//2 - BALL_RADIUS, HEIGHT//2 - BALL_RADIUS, BALL_RADIUS*
 left_score = 0
 right_score = 0
 
-# Police
+# Font
 font = pygame.font.SysFont('comicsans', 50)
 title_font = pygame.font.SysFont('comicsans', 60)
 
-# État des événements
+# State of the event
 event_text = ""
 event_timer = 0
 silly_blocks_triggered = False
@@ -55,37 +53,35 @@ enemy_paddle_stopped = False
 stand_paddle = None
 star_platinum_paddle = None
 
-# Blocs Silly Blocks
+# Blocs of Silly Blocks
 left_blocks = []
 right_blocks = []
 
 def draw_window():
     WIN.fill(BLACK)
 
-    # Affichage des scores
     left_score_text = font.render(f"Score: {left_score}", 1, WHITE)
     right_score_text = font.render(f"Score: {right_score}", 1, WHITE)
     WIN.blit(left_score_text, (WIDTH//4 - left_score_text.get_width()//2, 20))
     WIN.blit(right_score_text, (WIDTH * 3//4 - right_score_text.get_width()//2, 20))
 
-    # Affichage des paddles et de la balle
     pygame.draw.rect(WIN, RED, left_paddle)
     pygame.draw.rect(WIN, BLUE, right_paddle)
     pygame.draw.ellipse(WIN, GREEN, ball)
     pygame.draw.aaline(WIN, WHITE, (WIDTH//2, 0), (WIDTH//2, HEIGHT))
 
-    # Affichage des blocs Silly Blocks
+    # Affichage blocks
     for block in left_blocks:
         pygame.draw.rect(WIN, WHITE, block)
     for block in right_blocks:
         pygame.draw.rect(WIN, WHITE, block)
 
-    # Affichage de l'événement
+    # Affichage de l'event
     if event_text:
         event_display = title_font.render(event_text, 1, WHITE)
         WIN.blit(event_display, (WIDTH//2 - event_display.get_width()//2, HEIGHT//2 - event_display.get_height()//2))
 
-    # Affichage des paddles STAND
+    # Affichage des stand
     if stand_paddle:
         pygame.draw.rect(WIN, YELLOW, stand_paddle)
     if star_platinum_paddle:
@@ -98,7 +94,7 @@ def handle_paddle_movement(keys):
         left_paddle.y -= PADDLE_VEL
     if keys[pygame.K_s] and left_paddle.bottom < HEIGHT:
         left_paddle.y += PADDLE_VEL
-    if not enemy_paddle_stopped:  # Le paddle droit ne bouge que si l'événement "STAND - THE WORLD" n'est pas actif
+    if not enemy_paddle_stopped:  # paddle stop par le time stop
         if keys[pygame.K_UP] and right_paddle.top > 0:
             right_paddle.y -= PADDLE_VEL
         if keys[pygame.K_DOWN] and right_paddle.bottom < HEIGHT:
@@ -109,12 +105,10 @@ def handle_ball_movement():
 
     ball.x += BALL_X_VEL
     ball.y += BALL_Y_VEL
-
-    # Rebonds sur les murs supérieurs et inférieurs
+    
     if ball.top <= 0 or ball.bottom >= HEIGHT:
         BALL_Y_VEL *= -1
 
-    # Rebonds sur les paddles
     if ball.colliderect(left_paddle):
         BALL_X_VEL *= -1
         left_score += 100
@@ -122,22 +116,20 @@ def handle_ball_movement():
         BALL_X_VEL *= -1
         right_score += 100
 
-    # Réactions avec les blocs
     for block in left_blocks:
         if ball.colliderect(block):
             BALL_X_VEL *= -1
             left_blocks.remove(block)
-            left_score += 50  # Bonus pour la destruction d'un bloc
-            break  # Sort de la boucle après avoir touché un bloc
-
+            left_score += 50 
+            break  
+            
     for block in right_blocks:
         if ball.colliderect(block):
             BALL_X_VEL *= -1
             right_blocks.remove(block)
-            right_score += 50  # Bonus pour la destruction d'un bloc
-            break  # Sort de la boucle après avoir touché un bloc
+            right_score += 50  # Bonus
+            break  
 
-    # Sortie de la balle (score)
     if ball.left <= 0:
         right_score -= 100
         reset_ball()
@@ -186,16 +178,14 @@ def main():
         clock.tick(FPS)
         draw_window()
 
-        # Vérification du timer pour l'événement
         if event_text and time.time() - event_timer > 3:  # 3 secondes
             event_text = ""
-
-        # Gestion du mouvement des paddles et de la balle
+            
         keys = pygame.key.get_pressed()
         handle_paddle_movement(keys)
         handle_ball_movement()
 
-        # Déclenchement des événements basés sur les scores
+
         if left_score >= 5000 and not silly_blocks_triggered:
             generate_blocks(left_paddle, right_blocks)
             generate_blocks(right_paddle, left_blocks)
@@ -206,31 +196,27 @@ def main():
             generate_blocks(right_paddle, left_blocks)
             trigger_event("EVENT : SILLY BLOCKS")
 
-        # Gestion de l'événement YOURBALLZ
+
         if left_score >= 7000 and ball_size_reduction == 0:
             ball_size_reduction = 0.5
             ball_size_reduction_start_time = time.time()
             trigger_event("EVENT : YOURBALLZ")
-
-        # Gestion de l'événement STAND - THE WORLD
+ 
         if left_score >= 20000 and not the_world_triggered:
             trigger_stand_the_world()
             the_world_triggered = True
 
-        # Gestion de l'événement STAR PLATINUM
         if right_score >= 20000 and not star_platinum_triggered:
             trigger_star_platinum()
             star_platinum_triggered = True
 
-        # Vérification du timer pour STAND - THE WORLD
         if enemy_paddle_stopped and stand_paddle and time.time() - the_world_start_time > 5:  # 5 secondes
             enemy_paddle_stopped = False
-            stand_paddle = None  # Retire le paddle STAND
+            stand_paddle = None  
 
-        # Vérification du timer pour STAR PLATINUM
         if enemy_paddle_stopped and star_platinum_paddle and time.time() - star_platinum_start_time > 5:  # 5 secondes
             enemy_paddle_stopped = False
-            star_platinum_paddle = None  # Retire le paddle STAR PLATINUM
+            star_platinum_paddle = None  
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
